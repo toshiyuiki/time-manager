@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    hostname: db
+    env_file:
+      - ./.env
+    networks:
+      - network
+    restart: always
+    environment:
+      - TZ=Asia/Tokyo
+      - POSTGRES_DB=$DB_NAME
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASS
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/data:/var/lib/postgresql/data/pgdata
+  front:
+    networks:
+      - network
+    build: ./front
+    volumes:
+      - ./front:/front:cached 
+      - ./front/node_modules:/front/node_modules
+    ports:
+      - "3001:3000"
+      - "5556:5555"
+    tty: true
+    depends_on:
+      - db
+networks:
+  network:
+    driver: bridge
+volumes:
+  node_modules:
